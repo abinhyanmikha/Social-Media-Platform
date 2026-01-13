@@ -30,6 +30,10 @@ router.post("/register", async (req, res) => {
 });
 
 // LOGIN
+router.get("/login", (req, res) => {
+  res.status(405).json({ message: "Login requires a POST request. You sent a GET request." });
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
