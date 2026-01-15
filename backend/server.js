@@ -20,6 +20,8 @@ app.use((req, res, next) => {
 app.use(express.static("frontend")); // Serve static files
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/posts", require("./routes/postRoutes"));
+
 
 // Test route
 app.get("/server-test", (req, res) => {
