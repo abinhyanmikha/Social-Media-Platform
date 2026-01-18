@@ -1,6 +1,7 @@
 const API_URL = "http://localhost:5000/api/posts";
 const token = localStorage.getItem("token");
 
+// Protect page
 if (!token) {
   window.location.href = "index.html";
 }
@@ -19,20 +20,24 @@ async function fetchPosts() {
     },
   });
 
+  // Token expired or invalid
+  if (res.status === 401) {
+    logout();
+    return;
+  }
+
   const posts = await res.json();
   const postsDiv = document.getElementById("posts");
   postsDiv.innerHTML = "";
 
   posts.forEach((post) => {
     const div = document.createElement("div");
-    div.style.border = "1px solid #ccc";
-    div.style.padding = "10px";
-    div.style.marginBottom = "10px";
+    div.className = "post";
 
     div.innerHTML = `
       <strong>${post.user.username}</strong>
       <p>${post.content}</p>
-      <button onclick="likePost('${post._id}')">
+      <button class="like-btn" onclick="likePost('${post._id}')">
         ❤️ ${post.likes.length}
       </button>
     `;
@@ -43,7 +48,8 @@ async function fetchPosts() {
 
 // CREATE POST
 async function createPost() {
-  const content = document.getElementById("content").value;
+  const content = document.getElementById("content").value.trim();
+  if (!content) return;
 
   await fetch(API_URL, {
     method: "POST",
@@ -69,6 +75,5 @@ async function likePost(postId) {
 
   fetchPosts();
 }
-
-// INITIAL LOAD
+// Initial fetch
 fetchPosts();
