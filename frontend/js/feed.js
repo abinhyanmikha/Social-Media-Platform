@@ -35,12 +35,31 @@ async function fetchPosts() {
     div.className = "post";
 
     div.innerHTML = `
-      <strong>${post.user.username}</strong>
-      <p>${post.content}</p>
-      <button class="like-btn" onclick="likePost('${post._id}')">
-        ❤️ ${post.likes.length}
-      </button>
-    `;
+  <strong>${post.user.username}</strong>
+  <p>${post.content}</p>
+
+  <button class="like-btn" onclick="likePost('${post._id}')">
+    ❤️ ${post.likes.length}
+  </button>
+
+  <div class="comments">
+    ${post.comments
+      .map(
+        (c) => `
+      <p>
+        <strong>${c.user?.username || "User"}:</strong>
+        ${c.text}
+      </p>
+    `,
+      )
+      .join("")}
+  </div>
+
+  <input
+    placeholder="Add a comment..."
+    onkeydown="if(event.key==='Enter') addComment('${post._id}', this)"
+  />
+`;
 
     postsDiv.appendChild(div);
   });
@@ -77,3 +96,19 @@ async function likePost(postId) {
 }
 // Initial fetch
 fetchPosts();
+async function addComment(postId, input) {
+  const text = input.value.trim();
+  if (!text) return;
+
+  await fetch(`${API_URL}/${postId}/comment`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({ text }),
+  });
+
+  input.value = "";
+  fetchPosts();
+}

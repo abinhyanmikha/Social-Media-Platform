@@ -66,3 +66,23 @@ button:hover {
 .logout {
   background: red;
 }
+
+.comments {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.comments p {
+  margin: 4px 0;
+}
+
+.comments strong {
+  color: #555;
+}
+
+.post input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+}

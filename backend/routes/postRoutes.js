@@ -21,7 +21,6 @@ router.post("/", auth, async (req, res) => {
 });
 
 /**
- * 
  * GET ALL POSTS (Feed)
  */
 router.get("/", auth, async (req, res) => {
@@ -35,6 +34,7 @@ router.get("/", auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 /**
  * LIKE / UNLIKE POST
  */
@@ -49,12 +49,8 @@ router.put("/:id/like", auth, async (req, res) => {
     const userId = req.user._id.toString();
 
     if (post.likes.includes(userId)) {
-      // UNLIKE
-      post.likes = post.likes.filter(
-        (id) => id.toString() !== userId
-      );
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
-      // LIKE
       post.likes.push(userId);
     }
 
@@ -65,5 +61,27 @@ router.put("/:id/like", auth, async (req, res) => {
   }
 });
 
+/**
+ * ADD COMMENT
+ */
+router.post("/:id/comment", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    post.comments.push({
+      user: req.user._id,
+      text: req.body.text,
+    });
+
+    await post.save();
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;
