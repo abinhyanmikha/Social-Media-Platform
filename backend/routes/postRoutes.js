@@ -13,7 +13,6 @@ router.post("/", auth, async (req, res) => {
       user: req.user._id,
       content: req.body.content,
     });
-
     res.status(201).json(post);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -27,6 +26,7 @@ router.get("/", auth, async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username")
+      .populate("comments.user", "username")
       .sort({ createdAt: -1 });
 
     res.json(posts);
@@ -41,10 +41,7 @@ router.get("/", auth, async (req, res) => {
 router.put("/:id/like", auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
     const userId = req.user._id.toString();
 
@@ -67,10 +64,7 @@ router.put("/:id/like", auth, async (req, res) => {
 router.post("/:id/comment", auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
     post.comments.push({
       user: req.user._id,

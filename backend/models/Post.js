@@ -10,7 +10,6 @@ const postSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
-      trim: true,
     },
     likes: [
       {
@@ -18,7 +17,6 @@ const postSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-
     comments: [
       {
         user: {

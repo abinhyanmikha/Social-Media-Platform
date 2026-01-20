@@ -96,6 +96,7 @@ async function likePost(postId) {
 }
 // Initial fetch
 fetchPosts();
+
 async function addComment(postId, input) {
   const text = input.value.trim();
   if (!text) return;
