@@ -83,7 +83,7 @@ async function createPost() {
   fetchPosts();
 }
 
-// LIKE / UNLIKE
+// LIKE / UNLIKEd
 async function likePost(postId) {
   await fetch(`${API_URL}/${postId}/like`, {
     method: "PUT",
