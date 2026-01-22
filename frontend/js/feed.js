@@ -41,7 +41,11 @@ async function fetchPosts() {
   <button class="like-btn" onclick="likePost('${post._id}')">
     ❤️ ${post.likes.length}
   </button>
-
+${
+  post.user._id.toString() === getUserIdFromToken()
+    ? `<button class="delete-btn" onclick="deletePost('${post._id}')">🗑 Delete</button>`
+    : ""
+}
   <div class="comments">
     ${post.comments
       .map(
@@ -111,5 +115,22 @@ async function addComment(postId, input) {
   });
 
   input.value = "";
+  fetchPosts();
+}
+
+function getUserIdFromToken() {
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  return payload.id; // ✅ matches JWT
+}
+
+async function deletePost(postId) {
+  if (!confirm("Are you sure you want to delete this post?")) return;
+
+  await fetch(`${API_URL}/${postId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
   fetchPosts();
 }
