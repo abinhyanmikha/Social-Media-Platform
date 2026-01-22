@@ -95,4 +95,28 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+//delete comment by owner
+router.delete("/:postId/comment/:commentId", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ message: "post not found" });
+    }
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "comment not found" });
+    }
+    if (comment.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "unauthorized" });
+    }
+    post.comments = post.comments.filter(
+      (c) => c._id.toString() !== req.params.commentId,
+    );
+    await post.save();
+    res.json({ message: "comment deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

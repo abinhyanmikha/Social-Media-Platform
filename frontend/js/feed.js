@@ -46,18 +46,24 @@ ${
     ? `<button class="delete-btn" onclick="deletePost('${post._id}')">🗑 Delete</button>`
     : ""
 }
-  <div class="comments">
-    ${post.comments
-      .map(
-        (c) => `
-      <p>
-        <strong>${c.user?.username || "User"}:</strong>
-        ${c.text}
-      </p>
-    `,
-      )
-      .join("")}
-  </div>
+ <div class="comments">
+  ${post.comments
+    .map(
+      (c) => `
+        <p>
+          <strong>${c.user?.username || "User"}:</strong>
+          ${c.text}
+          ${
+            c.user && c.user._id.toString() === getUserIdFromToken()
+              ? `<button onclick="deleteComment('${post._id}','${c._id || c.id}')">🗑</button>`
+              : ""
+          }
+        </p>
+      `,
+    )
+    .join("")}
+</div>
+
 
   <input
     placeholder="Add a comment..."
@@ -132,5 +138,24 @@ async function deletePost(postId) {
       Authorization: "Bearer " + token,
     },
   });
+  fetchPosts();
+}
+async function deleteComment(postId, commentId) {
+  if (!confirm("Are you sure you want to delete this comment?")) return;
+  const res = await fetch(`${API_URL}/${postId}/comment/${commentId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
+  if (res.status === 401) return logout();
+  if (res.status === 403)
+    return alert("You are not authorized to delete this comment");
+  if (res.status === 404) return "Comment not found";
+
+  if (!res.ok) {
+    const err = await res.json();
+    return alert(err.message || "Failed to delete comment");
+  }
   fetchPosts();
 }
