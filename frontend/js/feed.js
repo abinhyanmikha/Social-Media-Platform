@@ -43,10 +43,13 @@ async function fetchPosts() {
   </button>
 ${
   post.user._id.toString() === getUserIdFromToken()
-    ? `<button class="delete-btn" onclick="deletePost('${post._id}')">🗑 Delete</button>`
+    ? `
+      <button onclick="editPost('${post._id}', '${post.content}')">✏️ Edit</button>
+      <button class="delete-btn" onclick="deletePost('${post._id}')">🗑 Delete</button>
+    `
     : ""
 }
- <div class="comments">
+<div class="comments">
   ${post.comments
     .map(
       (c) => `
@@ -157,5 +160,20 @@ async function deleteComment(postId, commentId) {
     const err = await res.json();
     return alert(err.message || "Failed to delete comment");
   }
+  fetchPosts();
+}
+
+async function editPost(postId, currentContent) {
+  const newContent = prompt("Edit your post:", currentContent);
+  if (!newContent || newContent.trim() === currentContent) return;
+  const res = await fetch(`${API_URL}/${postId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({ content: newContent }),
+  });
+  if (!res.ok) return alert("Failed to edit post");
   fetchPosts();
 }
