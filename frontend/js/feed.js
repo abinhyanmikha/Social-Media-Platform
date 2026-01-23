@@ -58,7 +58,8 @@ ${
           ${c.text}
           ${
             c.user && c.user._id.toString() === getUserIdFromToken()
-              ? `<button onclick="deleteComment('${post._id}','${c._id || c.id}')">🗑</button>`
+              ? `<button onclick="editComment('${post._id}','${c._id}','${c.text}')">✏️</button>
+              <button onclick="deleteComment('${post._id}','${c._id || c.id}')">🗑</button>`
               : ""
           }
         </p>
@@ -175,5 +176,20 @@ async function editPost(postId, currentContent) {
     body: JSON.stringify({ content: newContent }),
   });
   if (!res.ok) return alert("Failed to edit post");
+  fetchPosts();
+}
+
+async function editComment(postId, commentId, currentText) {
+  const newText = prompt("Edit your comment:", currentText);
+  if (!newText || newText.trim() === currentText) return;
+  const res = await fetch(`${API_URL}/${postId}/comment/${commentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({ text: newText }),
+  });
+  if (!res.ok) return alert("Failed to edit comment");
   fetchPosts();
 }

@@ -136,4 +136,28 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
+//edit comment by ownere
+router.put("/:postId/comment/:commentId", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ message: "post  not found" });
+    }
+    const comment = post.comments.find(
+      (c) => c._id.toString() === req.params.commentId,
+    );
+    if (!comment) {
+      return res.status(404).json({ message: "comment not found" });
+    }
+    if (comment.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "unauthorized" });
+    }
+    comment.text = req.body.text || comment.text;
+    await post.save();
+    res.json({ message: "comment updated" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
