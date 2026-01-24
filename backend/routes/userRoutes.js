@@ -22,26 +22,34 @@ router.get("/:id", auth, async (req, res) => {
 router.put("/:id/follow", auth, async (req, res) => {
   try {
     if (req.user._id.toString() === req.params.id) {
-      return res.status(400).json({ message: "you cant follow yourself" });
+      return res.status(400).json({ message: "You can't follow yourself" });
     }
+
     const userToFollow = await User.findById(req.params.id);
     const currentUser = await User.findById(req.user._id);
 
-    if (!userToFollow)
+    if (!userToFollow) {
       return res.status(404).json({ message: "User not found" });
-    if (currentUser.followers.includes(userToFollow_id)) {
-      //unfollow
-      currentUser.followers.pull(userToFollow._id);
-      userToFollow.following.pull(currentUser.id);
-    } else {
-      //follow
-      currentUser.following.push(userToFollow._id);
-      userToFollow.followers.push(currentUser._id);
     }
+
+    // If already following -> unfollow
+    if (currentUser.following.includes(userToFollow._id)) {
+      currentUser.following.pull(userToFollow._id);
+      userToFollow.followers.pull(currentUser._id);
+      await currentUser.save();
+      await userToFollow.save();
+
+      return res.json({ message: "Unfollowed successfully" });
+    }
+
+    // Otherwise -> follow
+    currentUser.following.push(userToFollow._id);
+    userToFollow.followers.push(currentUser._id);
+
     await currentUser.save();
     await userToFollow.save();
 
-    res.json({ message: "follow/unfollow successful" });
+    res.json({ message: "Followed successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

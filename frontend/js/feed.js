@@ -43,7 +43,9 @@ async function fetchPosts() {
     div.className = "post";
 
     div.innerHTML = `
-  <strong>${post.user.username}</strong>
+  <strong><a href="profile.html?id=${post.user._id}">
+    ${post.user.username}
+  </a></strong>
   <p>${post.content}</p>
 
   <button class="like-btn" onclick="likePost('${post._id}')">

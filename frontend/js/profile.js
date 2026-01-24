@@ -10,6 +10,7 @@ const POST_API = "http://localhost:5000/api/posts";
 const myId = JSON.parse(atob(token.split(".")[1])).id;
 
 async function loadProfile() {
+  const userId = getProfileId();
   const res = await fetch(`${USER_API}/${userId}`, {
     headers: { Authorization: "Bearer " + token },
   });
@@ -61,5 +62,11 @@ function logout() {
   localStorage.removeItem("token");
   window.location.href = "index.html";
 }
+function getProfileId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id");
+}
 
-loadProfile();
+window.onload = () => {
+  loadProfile();
+};
