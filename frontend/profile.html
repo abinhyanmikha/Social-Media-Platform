@@ -23,14 +23,29 @@
 
           <div class="profile-stats">
             <span><strong id="postCount">0</strong> posts</span>
-            <span><strong id="followers">0</strong> followers</span>
-            <span><strong id="following">0</strong> following</span>
+
+            <span>
+              <strong id="followers">0</strong> followers
+              <button id="followersBtn">View</button>
+            </span>
+
+            <span>
+              <strong id="following">0</strong> following
+              <button id="followingBtn">View</button>
+            </span>
           </div>
         </div>
       </div>
 
       <!-- POSTS -->
       <div class="profile-posts" id="posts"></div>
+    </div>
+    <div id="listModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal">X</span>
+        <h3 id="modalTitle"></h3>
+        <div id="modalList"></div>
+      </div>
     </div>
 
     <script src="js/profile.js"></script>
