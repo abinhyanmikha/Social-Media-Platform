@@ -1,38 +1,65 @@
-const API_URL = "http://localhost:5000/api/users";
 const token = localStorage.getItem("token");
-const userId = new URLSearchParams(window.location.search).get("id");
+if (!token) window.location.href = "index.html";
+
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("id");
+
+const USER_API = "http://localhost:5000/api/users";
+const POST_API = "http://localhost:5000/api/posts";
+
+const myId = JSON.parse(atob(token.split(".")[1])).id;
 
 async function loadProfile() {
-  const res = await fetch(`${API_URL}/${userId}`, {
+  const res = await fetch(`${USER_API}/${userId}`, {
     headers: { Authorization: "Bearer " + token },
   });
-
   const user = await res.json();
 
   document.getElementById("username").innerText = user.username;
   document.getElementById("followers").innerText = user.followers.length;
   document.getElementById("following").innerText = user.following.length;
 
-  const loggedInUserId = getUserIdFromToken();
-  const isFollowing = user.followers.some((f) => f._id === loggedInUserId);
+  const followBtn = document.getElementById("followBtn");
 
-  document.getElementById("followBtn").innerText = isFollowing
-    ? "Unfollow"
-    : "Follow";
+  if (user._id === myId) {
+    followBtn.style.display = "none";
+  } else {
+    followBtn.innerText = user.followers.includes(myId) ? "Unfollow" : "Follow";
+    followBtn.onclick = toggleFollow;
+  }
+
+  loadPosts();
 }
 
 async function toggleFollow() {
-  await fetch(`${API_URL}/${userId}/follow`, {
+  await fetch(`${USER_API}/${userId}/follow`, {
     method: "PUT",
     headers: { Authorization: "Bearer " + token },
   });
   loadProfile();
 }
 
-document.getElementById("followBtn").onclick = toggleFollow;
-loadProfile();
+async function loadPosts() {
+  const res = await fetch(`${POST_API}/user/${userId}`, {
+    headers: { Authorization: "Bearer " + token },
+  });
+  const posts = await res.json();
 
-function getUserIdFromToken() {
-  const payload = JSON.parse(atob(token.split(".")[1]));
-  return payload.id;
+  const postsDiv = document.getElementById("posts");
+  postsDiv.innerHTML = "";
+
+  document.getElementById("postCount").innerText = posts.length;
+
+  posts.forEach((post) => {
+    const div = document.createElement("div");
+    div.className = "profile-post";
+    div.innerText = post.content;
+    postsDiv.appendChild(div);
+  });
 }
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+}
+
+loadProfile();

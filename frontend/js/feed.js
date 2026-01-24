@@ -6,6 +6,14 @@ if (!token) {
   window.location.href = "index.html";
 }
 
+//go to profile
+function goToProfile() {
+  const userId = getUserIdFromToken();
+  console.log("User ID:", getUserIdFromToken());
+
+  window.location.href = `profile.html?id=${userId}`;
+}
+
 // LOGOUT
 function logout() {
   localStorage.removeItem("token");

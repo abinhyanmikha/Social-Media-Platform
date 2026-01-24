@@ -159,5 +159,18 @@ router.put("/:postId/comment/:commentId", auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// GET POSTS BY USER (Profile page)
+router.get("/user/:userId", auth, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.params.userId })
+      .populate("user", "username")
+      .populate("comments.user", "username")
+      .sort({ createdAt: -1 });
+
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

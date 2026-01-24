@@ -1,6 +1,38 @@
-<h2 id="username"></h2>
-<p>Followers: <span id="followers"></span></p>
-<p>Following: <span id="following"></span></p>
-<button id="followBtn"></button>
+<!doctype html>
+<html>
+  <head>
+    <title>Profile</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="nav">
+      <button onclick="window.location.href = 'feed.html'">⬅ Feed</button>
+      <button onclick="logout()">Logout</button>
+    </div>
 
-<script src="profile.js"></script>
+    <div class="profile-container">
+      <!-- HEADER -->
+      <div class="profile-header">
+        <div class="avatar">👤</div>
+
+        <div class="profile-info">
+          <div class="profile-top">
+            <h2 id="username"></h2>
+            <button id="followBtn"></button>
+          </div>
+
+          <div class="profile-stats">
+            <span><strong id="postCount">0</strong> posts</span>
+            <span><strong id="followers">0</strong> followers</span>
+            <span><strong id="following">0</strong> following</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSTS -->
+      <div class="profile-posts" id="posts"></div>
+    </div>
+
+    <script src="js/profile.js"></script>
+  </body>
+</html>
