@@ -1,18 +1,30 @@
 const express = require("express");
 const auth = require("../middleware/authMiddleware");
 const User = require("../models/User");
+const Follower = require("../models/Follower");
 
 const router = express.Router();
 router.get("/:id", auth, async (req, res) => {
   try {
-    const userId = await User.findById(req.params.id)
-      .select("-password")
-      .populate("followers", "username")
-      .populate("following", "username");
-    if (!userId) {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(userId);
+
+    const followersRaw = await Follower.find({ following: user._id }).populate(
+      "follower",
+      "username"
+    );
+    const followingRaw = await Follower.find({ follower: user._id }).populate(
+      "following",
+      "username"
+    );
+
+    res.json({
+      ...user.toObject(),
+      followers: followersRaw.map((f) => f.follower),
+      following: followingRaw.map((f) => f.following),
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -26,28 +38,24 @@ router.put("/:id/follow", auth, async (req, res) => {
     }
 
     const userToFollow = await User.findById(req.params.id);
-    const currentUser = await User.findById(req.user._id);
-
     if (!userToFollow) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // If already following -> unfollow
-    if (currentUser.following.includes(userToFollow._id)) {
-      currentUser.following.pull(userToFollow._id);
-      userToFollow.followers.pull(currentUser._id);
-      await currentUser.save();
-      await userToFollow.save();
+    const existingFollow = await Follower.findOne({
+      follower: req.user._id,
+      following: req.params.id,
+    });
 
+    if (existingFollow) {
+      await existingFollow.deleteOne();
       return res.json({ message: "Unfollowed successfully" });
     }
 
-    // Otherwise -> follow
-    currentUser.following.push(userToFollow._id);
-    userToFollow.followers.push(currentUser._id);
-
-    await currentUser.save();
-    await userToFollow.save();
+    await Follower.create({
+      follower: req.user._id,
+      following: req.params.id,
+    });
 
     res.json({ message: "Followed successfully" });
   } catch (err) {

@@ -1,5 +1,6 @@
 const express = require("express");
 const Post = require("../models/Post");
+const Comment = require("../models/Comment");
 const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -26,10 +27,18 @@ router.get("/", auth, async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username")
-      .populate("comments.user", "username")
       .sort({ createdAt: -1 });
 
-    res.json(posts);
+    const postsWithComments = await Promise.all(
+      posts.map(async (post) => {
+        const comments = await Comment.find({ post: post._id })
+          .populate("user", "username")
+          .sort({ createdAt: 1 });
+        return { ...post.toObject(), comments };
+      })
+    );
+
+    res.json(postsWithComments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -63,16 +72,14 @@ router.put("/:id/like", auth, async (req, res) => {
  */
 router.post("/:id/comment", auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
-    post.comments.push({
+    const comment = await Comment.create({
+      post: req.params.id,
       user: req.user._id,
       text: req.body.text,
     });
 
-    await post.save();
-    res.json(post);
+    const populatedComment = await comment.populate("user", "username");
+    res.json(populatedComment);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -98,21 +105,14 @@ router.delete("/:id", auth, async (req, res) => {
 //delete comment by owner
 router.delete("/:postId/comment/:commentId", auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) {
-      return res.status(404).json({ message: "post not found" });
-    }
-    const comment = post.comments.id(req.params.commentId);
+    const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
       return res.status(404).json({ message: "comment not found" });
     }
     if (comment.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "unauthorized" });
     }
-    post.comments = post.comments.filter(
-      (c) => c._id.toString() !== req.params.commentId,
-    );
-    await post.save();
+    await comment.deleteOne();
     res.json({ message: "comment deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -139,13 +139,7 @@ router.put("/:id", auth, async (req, res) => {
 //edit comment by ownere
 router.put("/:postId/comment/:commentId", auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) {
-      return res.status(404).json({ message: "post  not found" });
-    }
-    const comment = post.comments.find(
-      (c) => c._id.toString() === req.params.commentId,
-    );
+    const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
       return res.status(404).json({ message: "comment not found" });
     }
@@ -153,8 +147,8 @@ router.put("/:postId/comment/:commentId", auth, async (req, res) => {
       return res.status(403).json({ message: "unauthorized" });
     }
     comment.text = req.body.text || comment.text;
-    await post.save();
-    res.json({ message: "comment updated" });
+    await comment.save();
+    res.json({ message: "comment updated", comment });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -164,10 +158,18 @@ router.get("/user/:userId", auth, async (req, res) => {
   try {
     const posts = await Post.find({ user: req.params.userId })
       .populate("user", "username")
-      .populate("comments.user", "username")
       .sort({ createdAt: -1 });
 
-    res.json(posts);
+    const postsWithComments = await Promise.all(
+      posts.map(async (post) => {
+        const comments = await Comment.find({ post: post._id })
+          .populate("user", "username")
+          .sort({ createdAt: 1 });
+        return { ...post.toObject(), comments };
+      })
+    );
+
+    res.json(postsWithComments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
