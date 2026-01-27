@@ -1,5 +1,5 @@
-const API_URL = "http://localhost:5000/api/users";
-const POST_API = "http://localhost:5000/api/posts";
+const API_URL = "/api/users";
+const POST_API = "/api/posts";
 
 const token = localStorage.getItem("token");
 
