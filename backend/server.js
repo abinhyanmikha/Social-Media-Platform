@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+const path = require("path");
 const app = express();
 
 // ======================
@@ -21,7 +22,7 @@ app.use((req, res, next) => {
 // ======================
 // Static Frontend
 // ======================
-app.use(express.static("frontend"));
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // ======================
 // API Routes
