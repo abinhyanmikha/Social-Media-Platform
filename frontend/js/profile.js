@@ -3,6 +3,15 @@ const POST_API = "/api/posts";
 
 const token = localStorage.getItem("token");
 
+if (!token) {
+  window.location.href = "index.html";
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+}
+
 function getProfileId() {
   const params = new URLSearchParams(window.location.search);
   return params.get("id");
